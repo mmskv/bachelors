@@ -1,0 +1,326 @@
+\RequirePackage[OT1]{fontenc}
+\documentclass[conference]{IEEEtran}
+
+\IEEEoverridecommandlockouts
+\usepackage[OT1]{fontenc}
+%\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{flushend}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\usepackage[backend=biber, style=numeric-comp, language=auto, autolang=other, sorting=none]{biblatex}
+\addbibresource{references.bib}
+
+\begin{document}
+
+\title{Resiliently Synchronizing SFN Networks: Combining Precise Time Signals from GPS and Longwave Radio Stations}
+
+\author{\IEEEauthorblockN{Maxim Emelyanenko}
+\IEEEauthorblockA{\textit{Department of Information Security} \\
+\textit{National Research University ``Higher School of Economics''}\\
+Moscow, Russia \\
+mvemelyanenko@edu.hse.ru}}
+
+\maketitle
+
+\begin{abstract}
+This study presents a novel approach for enhancing the resilience of time
+synchronization in Single Frequency Networks (SFN), particularly within the
+context of digital terrestrial television broadcasting standards. It
+critically assesses the reliance on Global Navition Satellite Systems
+(GNSS) for SFN synchronization, identifying it as a potential single point
+of failure due to GNSS's susceptibilities, such as ephemeris errors,
+ionospheric delays, solar activity, and potential attacks that compromise
+signal accuracy and reliability. The paper explores the potential of
+eLoran, a system that was developed to provide resiliency for global
+navigational systems by complementing GNSS systems with ground-based time
+signal radio stations for trilateration. Development of a similar system is
+proposed advocating for a holistic approach that combines GNSS with
+existing terrestrial time signal radio station infrastructure to enhance
+SFN resilience against vulnerabilities.
+\end{abstract}
+
+\begin{IEEEkeywords}
+SFN, GNSS, eLoran, DVB-T, time synchronization
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\IEEEPARstart{W}{ith} single frequency networks evolving to meet
+ever-increasing throughput demands,  the precision of timing synchronization
+becomes crucial for the network performance. The advent of Digital Video
+Broadcasting -- Terrestrial (DVB-T) standard and their subsequent enhancements
+in DVB-T2 have significantly raised the bar for synchronization accuracy. These
+standards, employing orthogonal frequency-division multiplexing (OFDM)
+modulation, offer substantial data througput but also introduce strict
+requirements for transmission synchronization to prevent inter-symbol
+interference and optimize bandwidth utilization~\cite{ETSIDVBT22009,liang2007timing}. Historically, GNSSs, such as GPS and GLONASS, have been the
+cornerstone for achieving this level of synchronization across the
+geographically distributed infrastructure of SFNs because other systems like
+Precision Time Protocol (PTP), while effective in certain contexts with
+consistent network latencies, like a localized data center, encounter scaling
+challenges over geographical expanses, rendering them unsuitable~\cite{ieee1588_2008,ptpscale}. However,
+the reliance on GNSS without any complementary or backup system introduces a
+range of vulnerabilities, including susceptibility to ephemeris errors,
+ionospheric delays, solar activities, and potential security threats like
+jamming and spoofing which are thoroughly assessed in the section~\ref{gnss-vuln}. These
+vulnerabilities not only compromise the integrity and reliability of broadcast
+services but also highlight a critical single point of failure within the
+synchronization framework of SFNs.
+
+To mitigate similar risks in the context of global navigation, the eLoran
+system was developed as a terrestrial-based alternative to GNSS, designed to
+offer a robust solution to the single point of failure issue by providing a
+complementary source of timing signals usable for positional trilateration~\cite{eloran}.
+The approaches suggested by eLoarn are further reviewed in this paper in the
+section~\ref{eloran-chap}.
+
+Inspired by the principles of eLoran, this study explores the feasibility of
+leveraging terrestrial radio stations, specifically those managed by the
+Russian State Service for Time, Frequency, and Earth Rotation Parameters,
+alongside similar stations in Germany, the United Kingdom, and Japan~\cite{itur1997standard}.
+These stations, characterized by their picosecond-precision in time signal
+dissemination, present a viable solution for enhancing SFN synchronization
+resilience and accuracy.
+
+This paper proposes a hybrid synchronization model that integrates the
+precision of GNSS with the reliability of ground-based time signals. By
+examining fitness of the existing infrastructure and evaluating the potential
+of these terrestrial time signal sources, the study seeks to evaluate the
+scalability limitations inherent in ground-based systems and to outline
+effective algorithms for the detection and integration of these signals within
+the SFN synchronization framework. The exploration of this hybrid model
+provides a way for a strategic approach to safeguarding digital broadcasting
+networks against the multifaceted spectrum of threats impacting GNSS
+reliability.
+
+\section{Literature review}
+
+\subsection{GNSS Vulnerabilities}\label{gnss-vuln}
+
+The vulnerabilities of GNSS encompass a multifaceted array of challenges that
+significantly impact the accuracy and reliability of signal synchronization,
+crucial for the optimal operation of SFN. These vulnerabilities manifest
+through a variety of technical and natural phenomena. Technical issues such as
+ephemeris errors and time system inaccuracies can introduce significant
+discrepancies in positioning and timing signals~\cite{dempster2001vulnerable}.
+Additionally, natural phenomena like ionospheric and tropospheric signal delays
+present unpredictable challenges, distorting the signals transmitted by
+satellites. The impact of solar activity further complicates this scenario,
+inducing additional signal interference and
+delays~\cite{infrastructure2001vulnerability}.
+
+Moreover, GNSS vulnerabilities extend beyond natural and technical challenges,
+encompassing serious threats from intentional interference and attacks, such as
+jamming and spoofing. Jamming involves the disruption or obstruction of GNSS
+signal reception, while spoofing entails the broadcasting of false signals to
+mislead GNSS receivers. Instances of such attacks, including documented cases
+of GPS signal jamming by North Korea affecting South Korea, highlight the
+increasing prevalence and sophistication of these threats~\cite{SeoKim2013}.
+The low power of satellite-borne signals makes GNSS particularly susceptible to
+such attacks, underscoring the need for robust countermeasures.
+
+SFNs, relying heavily on precise timing synchronization, are especially
+vulnerable to the ramifications of GNSS disruptions. These vulnerabilities
+spotlight the critical importance of developing and implementing alternative
+time signal acquisition methods to ensure higher levels of security and
+reliability in systems dependent on accurate time synchronization. Reference
+\cite{machaj2021impact} underlines the serious consequences of GNSS
+interferences and attacks, advocating for the exploration and adoption of
+alternative approaches to bolster the resilience and reliability of such
+critical infrastructure. This necessitates a comprehensive understanding of
+GNSS vulnerabilities and a proactive approach to safeguarding SFN
+synchronization against the myriad of threats facing GNSS, ensuring the
+continuity and integrity of digital broadcasting services.
+
+\subsection{SFN Synchronization}\label{sfn-sync}
+
+Single Frequency Networks rely on the precise synchronization of
+broadcast signals across multiple transmitters to ensure seamless signal
+delivery to receivers within the network. This synchronization is crucial for
+preventing signal interference and maximizing network efficiency, as it allows
+multiple transmitters to broadcast the same content simultaneously on the same
+frequency. Without accurate synchronization, signals from different
+transmitters could overlap destructively, leading to signal degradation,
+increased error rates, and poor reception quality. Therefore, maintaining
+stringent synchronization across the SFN is essential for increasing network
+throughput by decreasing length of guard intervals that account for timing
+discrepancies between transmitters.
+
+Traditionally, SFNs have relied heavily on synchronization via GNSS, including GPS and GLONASS. This method,
+while widely adopted for its operational simplicity and precision, introduces a
+single point of failure due to its susceptibility to various vulnerabilities
+and underscores a critical need for more resilient and secure synchronization
+methods.
+
+The Integrated Time Transfer synchronization, aimed at removing GNSS dependency
+within SFN networks, leverages the Time Transfer feature of the Nimbra
+transport platform. This technology facilitates precise time signal
+dissemination across the network, capitalizing on its inherent architecture to
+maintain synchronization~\cite{Hellstrom2007}. Integrated Time Transfer system operates by
+embedding time signals within the data stream transmitted across the network.
+It requires a coherent network infrastructure, where each node is capable of
+extracting and utilizing these embedded time signals to synchronize its
+operations. Despite its innovative approach, this method encounters challenges
+in universal application across all DVB-T systems. Factors such as network
+configuration diversity, signal propagation delays, and the variable quality of
+network links can significantly impact its effectiveness. Specifically,
+environments with high network latency or those that lack uniformity in
+infrastructure design may not achieve the desired synchronization precision.
+While offering a level of resilience against common GNSS vulnerabilities such
+as signal jamming and spoofing, the Integrated Time Transfer synchronization's
+dependency on network infrastructure integrity introduces its own set of
+potential weaknesses. These include susceptibility to network-based disruptions
+and the need for robust, uniformly high-quality network connections to ensure
+consistent synchronization performance across the SFN.
+
+The transition towards alternative synchronization methods for SFNs is fraught
+with technical, logistical, and infrastructural challenges. The establishment
+of a terrestrial time signal network, for instance, requires significant
+investment and strategic planning to ensure coverage, precision, and
+reliability that can match or surpass GNSS-based methods. Furthermore, the
+integration of multiple synchronization sources introduces new complexities in
+synchronization algorithms and system design, necessitating further research
+and development efforts.
+
+\subsection{eLoran}\label{eloran-chap}
+
+eLoran, an advanced evolution of the original Long Range Navigation (Loran)
+system, stands out as a robust terrestrial-based navigational and timing
+solution, designed to complement and, in certain scenarios, replace GNSS
+systems like GPS. Its operational premise relies on a network of high-powered,
+low-frequency time signal radio transmitters usable for trilateration that
+provide wide-area coverage, capable of penetrating environments where GNSS
+signals may be weak or obstructed. This characteristic, coupled with eLoran's
+resistance to common forms of interference and spoofing attacks, underlines its
+utility in critical navigational infrastructure.
+
+The strength of eLoran lies in its signal's low frequency, which allows for
+reliable reception even in challenging conditions, making it an ideal candidate
+for secure, resilient time and frequency dissemination. This system's
+architecture is designed to offer an alternative or supplementary timing
+solution that mitigates the vulnerabilities inherent in satellite-based
+systems, particularly in scenarios where GNSS signals are compromised due to
+natural phenomena or deliberate interference.
+
+Further development and deployment of eLoran systems across the globe,
+including significant investments by countries in establishing and maintaining
+eLoran infrastructure, reflect a strategic approach to safeguarding critical
+communication, navigation, and timing services against the increasing threats
+to GNSS reliability. The integration of eLoran into existing technological
+frameworks promises enhanced operational continuity and security, making it a
+cornerstone in the pursuit of GNSS-independent, resilient global positioning
+networks.
+
+\subsection{Time signal range limitations}
+
+The investigation into the maximum achievable range for the reception of time
+signals from longwave radio stations constitutes a critical research domain.
+The advent of advanced Digital Signal Processing (DSP) technologies offers
+promising avenues to extend the reception range, potentially facilitating
+national coverage. In the context of Russia, the operation of 11 longwave
+precise time signal stations hints at the possibility of achieving nationwide
+coverage, as suggested by references such as the ITU-R 1997
+standard~\cite{itur1997standard}. However, the vast expanse of Russia's
+territory necessitates empirical validation to confirm these theoretical
+capabilities.
+
+Similar time signal radio station in Germany (DCF-77) is reported to have a
+reception range extending up to 2000 km. Despite this claim, there is a notable
+absence of comprehensive scientific investigations of this number. This gap in
+research underscores the imperative need for dedicated experimental studies
+aimed at accurately determining the maximum reception range of time signals.
+
+\section{Methods}
+
+The research begins with an exhaustive literature review to understand the
+current landscape of time synchronization, particularly emphasizing the DVB-T
+and DVB-T2 standards, Precision Time Protocol (PTP), and GNSS. This review serves to identify the state of the art
+and gaps in existing research.
+
+Exploring the propagation of low-frequency radio signals forms a significant
+portion of our study. This involves investigating how these signals are
+received and developing antennas with diverse characteristics aimed at ensuring
+robust reception of time signals. Such an investigation is critical for
+devising a reliable system that operates effectively under various conditions.
+
+In parallel, we focus on the creation of novel Digital Signal Processing (DSP)
+algorithms. These algorithms are designed to extract time signals from the
+noisy data received by the antennas, a key component in achieving accurate
+signal interpretation even in challenging environments.
+
+At the heart of our experimental setup is a hardware platform developed around
+the STM32 microcontroller. Selected for its performance and availability, this
+platform is intended to function as a timing source for synchronizing SFN base stations.
+
+To augment accuracy, especially during instances of signal loss, the system
+incorporates oven-compensated voltage-controlled oscillators (OCVCXO). Renowned
+for their stable signal performance over time, these devices are instrumental
+in maintaining synchronization precision.
+
+The performance of this comprehensive setup is rigorously evaluated through
+physical tests under a variety of natural conditions and at different distances
+from the radio time signal source. Such evaluations are essential for
+validating the system's effectiveness in real-world scenarios.
+
+Finally, the research develops algorithms capable of identifying discrepancies
+in both GNSS and ground-based time signals. These algorithms facilitate an
+internal switching mechanism between signal sources to ensure continuous
+synchronization of SFN base stations.
+
+This methodological framework underscores our dedication to advancing SFN
+synchronization technology. By addressing each component of the synchronization
+process, from signal reception and processing to hardware innovation, we aim to
+establish a robust foundation for future developments in digital broadcasting
+networks.
+
+\section{Anticipated Results}
+
+The anticipated outcomes of this study focus on the creation of an experimental
+device or a novel synchronization method tailored for SFNs. This initiative aims to leverage longwave precise time signal stations
+alongside supplementary sources to bolster resilience against GNSS
+interference. The endeavor involves engineering a device or methodology that is
+proficient in receiving a standard 1 PPS (pulse per second) time signal and a
+10 MHz reference signal, both exhibiting minimal deviation from the national
+time scale.
+
+Field evaluations will be conducted to ascertain the maximum feasible distance
+from the precise time signal radio stations' ground reference source while
+still maintaining the requisite accuracy and stability. Additionally, the
+project is set to devise a method for the rigorous assessment of the time
+signal's accuracy and stability, facilitating its evaluation under laboratory
+conditions complemented by the formulation of the necessary mathematical models
+and algorithmic support.
+
+A pivotal feature of the developed device will be its capability to seamlessly
+transition between GNSS and terrestrial time signals, thereby ensuring a stable
+synchronization signal, which is crucial for adherence to DVB-T2 standards. The
+project aspires to achieve a precision goal of at least $10^{-10}$~Hz relative
+to the Coordinated Universal Time (UTC) scale, aligning with the stringent
+demands set forth for DVB-T2 broadcasting standards~\cite{Hellstrom2007}.
+
+\section{Conclusion}
+
+This research explores the integration of GNSS and longwave radio stations for
+enhancing time synchronization in SFN networks, addressing the vulnerabilities
+of GNSS systems. Through a multifaceted approach including literature review,
+analysis of GNSS vulnerabilities, exploration of alternative synchronization
+methods, and development of experimental devices, the study proposes a hybrid
+model for SFN synchronization. This approach not only aims to mitigate the
+risks associated with GNSS dependencies but also explores the potential of
+ground-based time signals for improving resilience and accuracy. The
+anticipated outcomes suggest promising directions for future research and
+practical applications in digital broadcasting networks, emphasizing the
+importance of diversifying time signal sources to ensure reliable and precise
+synchronization across SFN networks.
+
+\printbibliography
+
+Word count: 2115
+
+\end{document}
