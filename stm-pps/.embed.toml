@@ -1,0 +1,5 @@
+[default.general]
+chip = "STM32H723ZGTx"
+
+[default.rtt]
+enabled = true
